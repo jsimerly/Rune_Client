@@ -66,7 +66,7 @@ class MainMenu(EcsAdmin, AbstractClientState):
     def _create_decor(self) -> list[Entity]:
         screen_size = self.get_singleton_component(ScreenSingletonComponent).screen.get_size()
         
-        game_logo = pygame.image.load('main_menu/assets/rune_logo.png')
+        game_logo = pygame.image.load('main_menu/assets/rune_logo.png').convert_alpha()
         original_logo_size = game_logo.get_size()  
         new_height = int(screen_size[1] * 0.5)
         aspect_ratio = original_logo_size[0] / original_logo_size[1]
@@ -79,7 +79,7 @@ class MainMenu(EcsAdmin, AbstractClientState):
         
         ui_builder = self.get_builder(UIBuilder)
         decor_entities = [
-            ui_builder.build_decor(logo_size, logo_pos, image=game_logo, bg_color=None)
+            ui_builder.build_decor(logo_size, logo_pos, image=game_logo, rect_attributes = {'bg_color': None, 'border_thickness': 0})
         ]
         return decor_entities
 
@@ -94,6 +94,15 @@ class MainMenu(EcsAdmin, AbstractClientState):
             int(screen_size[1]*.75)
         )
 
+        rect_attributes = {
+            'bg_color': (100, 100, 100),
+            'border_thickness' : 1,
+            'radius': 5,
+        }
+        text_attributes = {
+            'color' : (0, 0, 0),
+            'size' : 28
+        }
         button_info = [
             {'text': 'Start Game', 'trigger_event': 'look_for_game_click', 'markers': [LfgButtonMarker]},
             {'text': 'Settings', 'trigger_event': 'go_to_settings'},
@@ -106,10 +115,8 @@ class MainMenu(EcsAdmin, AbstractClientState):
             button = ui_builder.build_button(
                 size=button_size,
                 pos=button_pos,
-                bg_color=(100, 100, 100),
-                text_color=(255, 255, 255),
-                border=1, border_radius=5,
-                text_size=28,
+                rect_attributes=rect_attributes,
+                text_attributes=text_attributes,
                 **button_kwargs
             )
             button_pos = (button_pos[0], button_pos[1] + button_size[1] + 3)

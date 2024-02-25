@@ -16,48 +16,44 @@ class UIBuilder(Builder):
 
     def build_decor(self,
             size: tuple[int, int], pos: tuple[int, int],
-            bg_color: tuple[int, int, int] | None = (255,255,255), 
-            border: int | None = None, border_color: int = (0, 0, 0), border_radius: int = 0, font_path: str = None,
-            text: str | None = None, text_color: tuple[int, int, int] = (0,0,0), text_size: int = 24, text_alignment: str = 'center', text_margin: int = 0,
+            rect_attributes: dict[str, Any] | None = None, rect_focus_attributes: dict[str, Any] = None,
+            text:str = None, text_attributes: dict[str, Any] | None = None, text_focus_attributes: dict[str, Any] = None,
             image: pygame.Surface | None = None, image_alignment: str = 'center', image_margin: int = 0,
             markers: list[Type[Component]] = []
         ) -> Entity:
          
         return self.build_entity(
               self._build_rect_decoration_components(
-                    size=size, pos=pos, bg_color=bg_color, 
-                    border=border, border_color=border_color, border_radius=border_radius, font_path=font_path,
-                    text=text, text_color=text_color, text_size=text_size, text_alignment=text_alignment, text_margin=text_margin,
+                    size=size, pos=pos,
+                    rect_attributes=rect_attributes, rect_focus_attributes=rect_focus_attributes,
+                    text=text, text_attributes=text_attributes, text_focus_attributes=text_focus_attributes,
                     image=image, image_alignment=image_alignment, image_margin=image_margin,
                     markers=markers
               )
-         )
+        )
     
     def build_button(self,
-            size: tuple[int, int], pos: tuple[int, int], trigger_event: str,
-            bg_color: tuple[int, int, int] | None = (255,255,255), 
-            border: int | None = None, border_color: int = (0, 0, 0), border_radius: int = 0, font_path: str = None,
-            text: str | None = None, text_color: tuple[int, int, int] = (0,0,0), text_size: int = 24, text_alignment: str = 'center', text_margin: int = 0,
+            size: tuple[int, int], pos: tuple[int, int], trigger_event:str, 
+            rect_attributes: dict[str, Any] | None = None, rect_focus_attributes: dict[str, Any] = None,
+            text:str = None, text_attributes: dict[str, Any] | None = None, text_focus_attributes: dict[str, Any] = None,
             image: pygame.Surface | None = None, image_alignment: str = 'center', image_margin: int = 0,
             markers: list[Type[Component]] = []
         ) -> Entity:
         
         return self.build_entity(
               self._build_rect_button_components(
-                    size=size, pos=pos, bg_color=bg_color, trigger_event=trigger_event,
-                    border=border, border_color=border_color, border_radius=border_radius, font_path=font_path,
-                    text=text, text_color=text_color, text_size=text_size, text_alignment=text_alignment, text_margin=text_margin,
+                    size=size, pos=pos, trigger_event=trigger_event,
+                    rect_attributes=rect_attributes, rect_focus_attributes=rect_focus_attributes,
+                    text=text, text_attributes=text_attributes, text_focus_attributes=text_focus_attributes,
                     image=image, image_alignment=image_alignment, image_margin=image_margin,
                     markers=markers
               )
          )
-    
 
     def _build_rect_decoration_components(self,
             size: tuple[int, int], pos: tuple[int, int],
-            bg_color: tuple[int, int, int] | None = (255,255,255), 
-            border: int | None = None, border_color: int = (0, 0, 0), border_radius: int = 0, font_path: str = None,
-            text: str | None = None, text_color: tuple[int, int, int] = (0,0,0), text_size: int = 24, text_alignment: str = 'center', text_margin: int = 0,
+            rect_attributes: dict[str, Any] | None, rect_focus_attributes: dict[str, Any] | None,
+            text:str, text_attributes: dict[str, Any] | None, text_focus_attributes: dict[str, Any],
             image: pygame.Surface | None = None, image_alignment: str = 'center', image_margin: int = 0,
             markers: list[Type[Component]] = []
         ) -> list[Component]:
@@ -65,10 +61,8 @@ class UIBuilder(Builder):
             visual_componnet = self.create_component(
                 RectangleVisualComponent, 
                     size=size,
-                    bg_color=bg_color,
-                    border=border,
-                    border_color=border_color,
-                    border_radius=border_radius,
+                    attributes=rect_attributes or {},
+                    focus_attributes=rect_focus_attributes or {},
             )
             pos_component = self.create_component(
                 UIPositionComponent,
@@ -78,27 +72,8 @@ class UIBuilder(Builder):
             components = [visual_componnet, pos_component]
 
             if text:
-                font = font_manager.get_font(font_path, text_size)
-                text_rect = font.size(text)
-                text_pos = calculate_component_pos_rect(
-                    text_alignment, 
-                    size, 
-                    pos, 
-                    text_rect, 
-                    text_margin
-                )
-                components.append(
-                     self.create_component(
-                        TextVisualComponent,
-                            text=text, 
-                            text_color=text_color, 
-                            font=font,
-                            size=text_size,
-                            pos=text_pos, 
-                            margin=text_margin,
-                            alignment=text_alignment,
-                    )
-                )
+                text_comp = self._build_text_component(text, text_attributes, text_focus_attributes, size, pos)
+                components.append(text_comp)
             
             if image:
                 image_size = image.get_size()
@@ -115,18 +90,47 @@ class UIBuilder(Builder):
                 components.append(Marker())
     
             return components
+    
+    def _build_text_component(self, text: str, text_attributes: dict[str, Any], text_focus_attributes: dict[str, Any], size: tuple[int, int], pos: tuple[int, int]):
+        if text_attributes:
+                font = text_attributes.get('font', pygame.font.Font(None, 36))
+                text_alignment = text_attributes.get('alignment', 'center')
+                text_margin = text_attributes.get('margin', 0)
+        else:
+            font: pygame.font.Font = pygame.font.Font(None, 36)
+            text_alignment = 'center'
+            text_margin = 0
 
+        text_rect = font.size(text)
+        text_pos = calculate_component_pos_rect(
+            text_alignment, 
+            size, 
+            pos, 
+            text_rect, 
+            text_margin
+        )
+
+        return self.create_component(
+                TextVisualComponent,
+                    text=text, 
+                    pos=text_pos,
+                    attributes=text_attributes or {},
+                    focus_attributes=text_focus_attributes or {}
+            )
+            
     def _build_rect_button_components(self,
             size: tuple[int, int], pos: tuple[int, int], trigger_event: str,
-            bg_color: tuple[int, int, int] | None = (255, 255, 255),
-            border: int | None = None, border_color: int = (0, 0, 0), border_radius: int = 0,
-            text: str | None = None, text_color: tuple[int,int,int]=(0,0,0), text_size: int = 12, text_alignment: str = 'center', text_margin: int = 0, font_path: str = None,
+            rect_attributes: dict[str, Any] | None, rect_focus_attributes: dict[str, Any] | None,
+            text:str, text_attributes: dict[str, Any] | None, text_focus_attributes: dict[str, Any],
             image: pygame.Surface | None = None, image_alignment: str = 'center', image_margin: int = 0,
             markers: list[Type[Component]] = []
         ) -> list[Component]:
             
             components = self._build_rect_decoration_components(
-                size=size, pos=pos, bg_color=bg_color, border=border, border_color=border_color, border_radius=border_radius, text=text, text_size=text_size, text_color=text_color, text_alignment=text_alignment, text_margin=text_margin, font_path=font_path, image=image, image_alignment=image_alignment, image_margin=image_margin,
+                size=size, pos=pos, 
+                rect_attributes=rect_attributes, rect_focus_attributes=rect_focus_attributes,
+                text=text, text_attributes=text_attributes, text_focus_attributes=text_focus_attributes,
+                image=image, image_alignment=image_alignment, image_margin=image_margin,
                 markers=markers
             )
 

@@ -6,11 +6,11 @@ def calculate_component_text_pos(ui_entity: Entity) -> tuple[int, int]:
     pos_comp = ui_entity.get_component(UIPositionComponent)
     rect_comp = ui_entity.get_component(RectangleVisualComponent)
 
-    alignment = text_comp.alignment
+    alignment = text_comp.attributes['alignment']
     container_size = rect_comp.size
     container_pos = pos_comp.pos
     text_size = text_comp.text_size
-    margin = text_comp.margin
+    margin = text_comp.attributes['margin']
 
     return calculate_component_pos_rect(
         alignment, container_size, container_pos, text_size, margin

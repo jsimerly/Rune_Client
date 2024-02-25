@@ -21,10 +21,19 @@ class ButtonClickSystem(System):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 entities = self.get_required_entities()
 
+                unfocus = True
                 for entity in entities:
                     clickable_comp = entity.get_component(ClickableRectComponent)
                     if clickable_comp.rect.collidepoint(event.pos):
                         self.publish_event(clickable_comp.event_name)
+                        input_comp.current_focus = entity.id
+                        unfocus = False
+
+
+                if unfocus:
+                    input_comp.current_focus = None
+
+                
                         
 
                       

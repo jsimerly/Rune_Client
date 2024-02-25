@@ -8,7 +8,7 @@ from main_menu.components.markers import LfgButtonMarker
 from main_menu.components.match_making_singleton import MatchMakingSingletonComponent
 import pygame
 from ui.font_singleton import FontManager
-from utility.sizing import calculate_component_pos_rect
+from utility.sizing import calculate_component_pos_rect, calculate_component_text_pos
 from datetime import datetime
 
 if TYPE_CHECKING:
@@ -36,15 +36,32 @@ class RenderUISystem(System):
         text_comp = entity.get_component(TextVisualComponent)
         image_comp = entity.get_component(ImageComponent)
 
+        self._render_rect_comp(
+            screen, entity, pos_comp, rect_comp, text_comp, image_comp
+        )
+
+    def _render_rect_comp(self, 
+            screen: pygame. Surface,
+            entity: Entity,
+            pos_comp: UIPositionComponent | None, 
+            rect_comp: RectangleVisualComponent | None, 
+            text_comp: TextVisualComponent | None, 
+            image_comp: ImageComponent | None
+        ):
         if rect_comp:
             rect = pygame.Rect(pos_comp.pos, rect_comp.size)
             # Background
-            if rect_comp.bg_color:
-                pygame.draw.rect(screen, rect_comp.bg_color, rect, border_radius=rect_comp.border_radius)
+            if rect_comp.attributes['bg_color']:
+                color = rect_comp.attributes['bg_color']
+                radius = rect_comp.attributes['radius']
+                pygame.draw.rect(screen, color, rect, border_radius=radius)
 
             # Outline
-            if rect_comp.border:
-                pygame.draw.rect(screen, rect_comp.border_color, rect, rect_comp.border, rect_comp.border_radius)
+            if rect_comp.attributes['border_thickness'] > 0:
+                thickness = rect_comp.attributes['border_thickness']
+                color = rect_comp.attributes['border_color']
+                radius = rect_comp.attributes['radius']
+                pygame.draw.rect(screen, color, rect, thickness, radius)
 
             if image_comp:
                 screen.blit(image_comp.image, image_comp.pos)
@@ -61,17 +78,12 @@ class RenderUISystem(System):
                         text_comp.text = 'Cancel.' + '.' * dots_count
                     else:
                         text = 'Start Game'
-                    pos = calculate_component_pos_rect(
-                        text_comp.alignment,
-                        rect_comp.size,
-                        pos_comp.pos,
-                        text_comp.font.size(text),
-                        text_comp.margin
-                    )
+    
+                    pos = calculate_component_text_pos(entity)
 
-                text_surface = text_comp.font.render(
+                text_surface = text_comp.attributes['font'].render(
                     text, 
                     True,
-                    text_comp.text_color
+                    text_comp.attributes['color']
                 )
                 screen.blit(text_surface, pos)

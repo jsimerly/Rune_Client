@@ -5,3 +5,4 @@ import pygame
 @dataclass
 class MenuInputSingletonComponent(SingletonComponent):
     events: list[pygame.event.Event] = field(default_factory=list)
+    current_focus: int = field(default=None)
