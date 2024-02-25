@@ -65,7 +65,7 @@ class UIBuilder(Builder):
                     focus_attributes=rect_focus_attributes or {},
             )
             pos_component = self.create_component(
-                UIPositionComponent,
+                UIComponent,
                     pos=pos
             )
             

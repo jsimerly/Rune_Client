@@ -1,9 +1,9 @@
 from ecs_engine import Entity
-from ui.components.visual import TextVisualComponent, UIPositionComponent, RectangleVisualComponent
+from ui.components.visual import TextVisualComponent, UIComponent, RectangleVisualComponent
 
 def calculate_component_text_pos(ui_entity: Entity) -> tuple[int, int]:
     text_comp = ui_entity.get_component(TextVisualComponent)
-    pos_comp = ui_entity.get_component(UIPositionComponent)
+    pos_comp = ui_entity.get_component(UIComponent)
     rect_comp = ui_entity.get_component(RectangleVisualComponent)
 
     alignment = text_comp.attributes['alignment']

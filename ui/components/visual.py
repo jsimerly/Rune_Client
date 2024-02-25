@@ -9,9 +9,9 @@ class Border:
     color: tuple[int, int, int] = (0, 0, 0)
 
 @dataclass
-class UIPositionComponent(Component):
+class UIComponent(Component):
     pos: tuple[int, int]
-
+    in_focus: bool = field(default=False)
 
 class RectAttrDict(TypedDict):
     bg_color: tuple[int, int, int]

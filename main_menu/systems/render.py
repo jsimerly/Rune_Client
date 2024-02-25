@@ -3,7 +3,7 @@ from ecs_engine import System
 from ecs_engine.system import subscribe_to_event
 from typing import TYPE_CHECKING
 from main_menu.components.screen_singleton import ScreenSingletonComponent
-from ui.components.visual import RectangleVisualComponent, TextVisualComponent, ImageComponent, UIPositionComponent
+from ui.components.visual import RectangleVisualComponent, TextVisualComponent, ImageComponent, UIComponent
 from main_menu.components.markers import LfgButtonMarker
 from main_menu.components.match_making_singleton import MatchMakingSingletonComponent
 import pygame
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from ecs_engine import Entity
 
 class RenderUISystem(System):
-    required_components = [UIPositionComponent]
+    required_components = [UIComponent]
 
     @subscribe_to_event('update_dt')
     def update(self, dt: int):
@@ -30,38 +30,43 @@ class RenderUISystem(System):
             self._render_entity(screen, entity)
 
     def _render_entity(self, screen: pygame.Surface, entity: Entity):
-        pos_comp = entity.get_component(UIPositionComponent)
+        ui_comp = entity.get_component(UIComponent)
 
         rect_comp = entity.get_component(RectangleVisualComponent)
         text_comp = entity.get_component(TextVisualComponent)
         image_comp = entity.get_component(ImageComponent)
 
         self._render_rect_comp(
-            screen, entity, pos_comp, rect_comp, text_comp, image_comp
+            screen, entity, ui_comp, rect_comp, text_comp, image_comp
         )
 
     def _render_rect_comp(self, 
             screen: pygame. Surface,
             entity: Entity,
-            pos_comp: UIPositionComponent | None, 
+            ui_comp: UIComponent | None, 
             rect_comp: RectangleVisualComponent | None, 
             text_comp: TextVisualComponent | None, 
             image_comp: ImageComponent | None
         ):
+
+        in_focus = ui_comp.in_focus
+
         if rect_comp:
-            rect = pygame.Rect(pos_comp.pos, rect_comp.size)
+            rect = pygame.Rect(ui_comp.pos, rect_comp.size)
+            rect_active_attr = rect_comp.focus_attributes if in_focus else rect_comp.attributes
+            
             # Background
-            if rect_comp.attributes['bg_color']:
-                color = rect_comp.attributes['bg_color']
-                radius = rect_comp.attributes['radius']
+            if 'bg_color' in rect_active_attr and rect_active_attr['bg_color']:
+                color = rect_active_attr['bg_color']
+                radius = rect_active_attr.get('radius', 0)  # Use default value if 'radius' key is missing
                 pygame.draw.rect(screen, color, rect, border_radius=radius)
 
             # Outline
-            if rect_comp.attributes['border_thickness'] > 0:
-                thickness = rect_comp.attributes['border_thickness']
-                color = rect_comp.attributes['border_color']
-                radius = rect_comp.attributes['radius']
-                pygame.draw.rect(screen, color, rect, thickness, radius)
+            if 'border_thickness' in rect_active_attr and rect_active_attr['border_thickness'] > 0:
+                thickness = rect_active_attr['border_thickness']
+                color = rect_active_attr['border_color']
+                radius = rect_active_attr.get('radius', 0)
+                pygame.draw.rect(screen, color, rect, thickness, border_radius=radius)
 
             if image_comp:
                 screen.blit(image_comp.image, image_comp.pos)
@@ -87,3 +92,7 @@ class RenderUISystem(System):
                     text_comp.attributes['color']
                 )
                 screen.blit(text_surface, pos)
+            
+
+
+            

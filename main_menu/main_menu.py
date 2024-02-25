@@ -5,12 +5,12 @@ import pygame
 from ecs_engine import EcsAdmin, Component
 from .systems.render import RenderUISystem
 from .systems.input import InputSystem
-from .systems.button_clicks import ButtonClickSystem
+from .systems.pygame_events import PygameEventsSystem
 from .components.screen_singleton import ScreenSingletonComponent
 from .components.input_singleton import MenuInputSingletonComponent
 from .systems.look_for_game import LookForGame
 from .components.match_making_singleton import MatchMakingSingletonComponent
-from .components.markers import LfgButtonMarker
+from .components.markers import *
 from ui.components.interactable import ClickableRectComponent
 from ui.builders import UIBuilder
 
@@ -21,8 +21,12 @@ if TYPE_CHECKING:
 client_state = ClientState()
 
 class MainMenu(EcsAdmin, AbstractClientState):
-    events = ['update_dt', 'pygame_events', 'look_for_game_click', 'cancel_lfg']
-    systems = [RenderUISystem, InputSystem, ButtonClickSystem, LookForGame]
+    events = [
+        'update_dt', 'pygame_events', 'login_clicked', 'login_input_clicked', 'look_for_game_click', 'cancel_lfg'
+    ]
+    systems = [
+        RenderUISystem, InputSystem, PygameEventsSystem, LookForGame
+    ]
     singleton_components = [
         ScreenSingletonComponent(
             screen=pygame.display.set_mode(client_state.screen_size, pygame.SRCALPHA), 
@@ -91,32 +95,31 @@ class MainMenu(EcsAdmin, AbstractClientState):
         )
         button_pos = (
             int(screen_size[0]*.35),
-            int(screen_size[1]*.75)
+            int(screen_size[1]*.80)
         )
 
-        rect_attributes = {
-            'bg_color': (100, 100, 100),
-            'border_thickness' : 1,
-            'radius': 5,
-        }
-        text_attributes = {
-            'color' : (0, 0, 0),
-            'size' : 28
-        }
         button_info = [
-            {'text': 'Start Game', 'trigger_event': 'look_for_game_click', 'markers': [LfgButtonMarker]},
-            {'text': 'Settings', 'trigger_event': 'go_to_settings'},
-            {'text': 'Exit Game', 'trigger_event': 'exit_game'}
-        ]
+            {
+                'text': ' ', 'trigger_event': 'login_input_clicked', 'markers': [LoginInputMarker],
+                'text_attributes': {'alignment': 'center_left', 'margin': 10, 'color': (0,0,0), 'size': 28},
+                'rect_attributes' : {'bg_color': (240, 240, 240), 'radius': 5},
+                'rect_focus_attributes': {'border_color':(204, 161, 237), 'border_thickness': 3, 'radius': 5}
 
+            },
+            {
+                'text': 'Login', 'trigger_event': 'login_clicked', 'markers': [LoginButtonMarker],
+                'text_attributes': { 'color' : (0, 0, 0),'size' : 28},
+                'rect_attributes' : {'bg_color': (100, 100, 100), 'radius': 5},
+            },
+        ]
+        
         buttons: list[Entity] = []
         ui_builder = self.get_builder(UIBuilder)
+        
         for button_kwargs in button_info:
             button = ui_builder.build_button(
                 size=button_size,
                 pos=button_pos,
-                rect_attributes=rect_attributes,
-                text_attributes=text_attributes,
                 **button_kwargs
             )
             button_pos = (button_pos[0], button_pos[1] + button_size[1] + 3)
