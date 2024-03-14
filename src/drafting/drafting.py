@@ -5,11 +5,13 @@ from src.global_singleton_comps import ScreenSingletonComponent
 from src.drafting.components.input_singleton import DraftInputSingletonComponent
 from src.drafting.components.draft_state import DraftStateSingletonComponent, CharacterType
 from src.drafting.components.character import DraftCharacterComponent
+from src.drafting.components.markers import CountdownMarker, DraftBoxMarker
 from ecs_engine import EcsAdmin
 from src.ui.systems.render_ui import RenderUISystem
 from src.ui.builders import UIBuilder
 from src.drafting.systems.input import InputSystem
 from typing import TypedDict, Literal
+from src.drafting.systems.draft import DraftSystem
 from src.drafting.characters import character_icons
 import pygame
 
@@ -53,7 +55,8 @@ class Drafting(EcsAdmin, AbstractClientState):
     builders = [UIBuilder]
     systems = [
         InputSystem,
-        RenderUISystem
+        RenderUISystem,
+        DraftSystem
     ]
     singleton_components = [
         ScreenSingletonComponent(
@@ -124,38 +127,17 @@ class Drafting(EcsAdmin, AbstractClientState):
         t2_pos = (t2_x_pos, y_pos)
 
         box_info = [
-            {
-                'rect_attributes': {
-                    'radius': 5, 
-                    'border_color': (255, 0,0), 
-                    'border_thickness': 2,
-                    'bg_color': None
-                }
-            },
-            {
-                'rect_attributes': {
-                    'radius': 5, 
-                    'border_color': (255, 255, 255),  
-                    'border_thickness': 2,
-                    'bg_color': None
-                }
-            },
-            {
-                'rect_attributes': {
-                    'radius': 5, 
-                    'border_color': (255, 255, 255),  
-                    'border_thickness': 2,
-                    'bg_color': None
-                }
-            },
-            {
-                'rect_attributes': {
-                    'radius': 5, 
-                    'border_color': (255, 255, 255),  
-                    'border_thickness': 2,
-                    'bg_color': None
-                }
-            },
+            {'rect_attributes': {'radius': 5, 'border_thickness': 1,'bg_color': None,
+                'border_color': (255, 0, 0)}},
+            {'rect_attributes': {'radius': 5, 'border_thickness': 1,'bg_color': None,
+                'border_color': (255, 255, 255),  
+            }},
+            {'rect_attributes': {'radius': 5, 'border_thickness': 1,'bg_color': None,
+                'border_color': (255, 255, 255),  
+            }},
+            {'rect_attributes': {'radius': 5, 'border_thickness': 1,'bg_color': None,
+                'border_color': (255, 255, 255),  
+            }},
         ]
 
         ui_builder = self.get_builder(UIBuilder)
@@ -164,12 +146,14 @@ class Drafting(EcsAdmin, AbstractClientState):
             t1_box = ui_builder.build_decor(
                 size=box_size,
                 pos=t1_pos,
+                markers=[DraftBoxMarker(order=1, team='team_1')],
                 **box_kwargs
             )
             t1_pos = (t1_pos[0], t1_pos[1] + box_size[1] + 5)
             t2_box = ui_builder.build_decor(
                 size=box_size,
                 pos=t2_pos,
+                markers=[DraftBoxMarker(order=1, team='team_2')],
                 **box_kwargs
             )
             t2_pos = (t2_pos[0], t2_pos[1] + box_size[1] + 5)
@@ -187,7 +171,7 @@ class Drafting(EcsAdmin, AbstractClientState):
         base_box_attributes = {
             'rect_attributes': {
                 'radius': 5, 
-                'border_color': (255, 255, 255), 
+                'border_color': (80, 80, 80), 
                 'border_thickness': 2,
                 'bg_color': None
             },
@@ -286,7 +270,7 @@ class Drafting(EcsAdmin, AbstractClientState):
             }
         }
         
-        team_text_offset = .01
+        team_text_offset = .0175
         team_text_box_size = (screen_size[0] * .125, screen_size[1] * .075)
         client_team_pos = (screen_size[0] * team_text_offset, screen_size[1] * .02)
         opp_team_pos = (screen_size[0] * (1-team_text_offset) - team_text_box_size[0], screen_size[1] * .02)
@@ -319,7 +303,7 @@ class Drafting(EcsAdmin, AbstractClientState):
         header = ui_builder.build_decor(
             size=header_size,
             pos=header_pos,
-            text='Waiting for the draft to begin.',
+            text='Waiting for the draft to begin...',
             **header_kwargs
         )
 
@@ -337,6 +321,7 @@ class Drafting(EcsAdmin, AbstractClientState):
             size=countdown_size,
             pos=countdown_pos,
             text='10s',
+            markers=[CountdownMarker()],
             **countdown_kwargs,
         )
 

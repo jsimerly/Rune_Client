@@ -42,7 +42,7 @@ class DraftStateSingletonComponent(SingletonComponent):
     unavailable_picks: list[int] 
 
     state: Literal['pre_draft', 'team_1_ban', 'team_2_ban', 'team_1_pick', 'team_2_pick', 'completed'] = field(default='pre_draft')
-    count_down_ms: int = field(default=10) 
+    count_down_ms: int = field(default=10000) 
 
     @property
     def client_team(self) -> TeamType:
@@ -55,4 +55,12 @@ class DraftStateSingletonComponent(SingletonComponent):
         if self.is_team_1:
             return self.team_2
         return self.team_1
+    
+    @property
+    def is_client_turn(self) -> bool:
+        if self.is_team_1:
+            return self.state == 'team_1_ban' or self.state == 'team_1_pick'
+        return self.state == 'team_2_ban' or self.state == 'team_2_pick'
+
+        
 

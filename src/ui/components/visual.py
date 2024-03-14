@@ -73,6 +73,17 @@ class TextVisualComponent(Component):
     def text_size(self) -> tuple[int, int]:
         return self.attributes['font'].size(self.text)
     
+    def update_text_realign(self, new_text: str):
+        font = self.attributes['font']
+        new_size = font.size(new_text)
+        text_size = font.size(self.text)
+        size_delta_x, size_delta_y = new_size[0] - text_size[0], new_size[1] - text_size[1]
+
+        if self.attributes['alignment'] == 'center':
+            new_pos = (self.pos[0] - size_delta_x //2, self.pos[1] - size_delta_y)
+            self.pos = new_pos
+        self.text = new_text
+            
     
 @dataclass
 class ImageComponent(Component):

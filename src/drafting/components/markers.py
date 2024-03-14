@@ -4,9 +4,10 @@ from typing import Literal
 
 @dataclass
 class DraftBoxMarker(Component):
+    order: int
     team: Literal['team_1', 'team_2']
     state: Literal['idle', 'active', 'complete'] = field(default='idle')
-    order: int
+
 
 @dataclass
 class CharacterButtonMarker(Component):
