@@ -8,4 +8,4 @@ import pygame
 class ClickableRectComponent(Component):
     rect: pygame.Rect
     event_name: str
-    event_params: dict[str, Any] = field(default=dict)
+    event_kwargs: dict[str, Any] = field(default=dict)

@@ -2,10 +2,12 @@ from ecs_engine import SingletonComponent
 from typing import TypedDict, Literal
 from dataclasses import dataclass, field
 
+class UserType(TypedDict):
+    username: str
 
 class TeamType(TypedDict):
     id: str
-    user: dict
+    user: UserType
     bans: list[dict]
     picks: list[dict]
 
@@ -31,7 +33,7 @@ class DraftStateSingletonComponent(SingletonComponent):
     last_action_time_ms: int 
     map: str
 
-    client_team: Literal['team_1', 'team_2'] 
+    is_team_1: bool 
     team_1: TeamType
     team_2: TeamType
 
@@ -40,5 +42,17 @@ class DraftStateSingletonComponent(SingletonComponent):
     unavailable_picks: list[int] 
 
     state: Literal['pre_draft', 'team_1_ban', 'team_2_ban', 'team_1_pick', 'team_2_pick', 'completed'] = field(default='pre_draft')
+    count_down_ms: int = field(default=10) 
 
+    @property
+    def client_team(self) -> TeamType:
+        if self.is_team_1:
+            return self.team_1
+        return self.team_2
+    
+    @property
+    def oppo_team(self) -> TeamType:
+        if self.is_team_1:
+            return self.team_2
+        return self.team_1
 

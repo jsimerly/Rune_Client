@@ -59,23 +59,26 @@ class RenderUISystem(System):
                 radius = rect_active_attr.get('radius', 0)  # Use default value if 'radius' key is missing
                 pygame.draw.rect(screen, color, rect, border_radius=radius)
 
-            # Outline
+        if image_comp:
+            screen.blit(image_comp.image, image_comp.pos)
+
+        # Outline
+        if rect_comp:
+            rect = pygame.Rect(ui_comp.pos, rect_comp.size)
+            rect_active_attr = rect_comp.focus_attributes if in_focus else rect_comp.attributes
+
             if 'border_thickness' in rect_active_attr and rect_active_attr['border_thickness'] > 0:
                 thickness = rect_active_attr['border_thickness']
                 color = rect_active_attr['border_color']
                 radius = rect_active_attr.get('radius', 0)
                 pygame.draw.rect(screen, color, rect, thickness, border_radius=radius)
 
-            if image_comp:
-                screen.blit(image_comp.image, image_comp.pos)
-
-            if text_comp:
-                text = text_comp.text
-                pos = text_comp.pos
-
-                text_surface = text_comp.attributes['font'].render(
-                    text, 
-                    True,
-                    text_comp.attributes['color']
-                )
-                screen.blit(text_surface, pos)
+        if text_comp:
+            text = text_comp.text
+            pos = text_comp.pos
+            text_surface = text_comp.attributes['font'].render(
+                text, 
+                True,
+                text_comp.attributes['color']
+            )
+            screen.blit(text_surface, pos)

@@ -11,3 +11,5 @@ class DraftBoxMarker(Component):
 @dataclass
 class CharacterButtonMarker(Component):
     id: int
+
+class CountdownMarker(Component): ...
