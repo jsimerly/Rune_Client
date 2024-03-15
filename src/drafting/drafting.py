@@ -4,12 +4,15 @@ from src.client_state import ClientState
 from src.global_singleton_comps import ScreenSingletonComponent
 from src.drafting.components.input_singleton import DraftInputSingletonComponent
 from src.drafting.components.draft_state import DraftStateSingletonComponent, CharacterType
-from src.drafting.components.character import DraftCharacterComponent
-from src.drafting.components.markers import CountdownMarker, DraftBoxMarker
+from src.drafting.components.character import DraftCharacterComponent, SelectedCharacterSingleton
+from src.drafting.components.markers import CountdownMarker, DraftBoxMarker, CharacterButtonMarker
 from ecs_engine import EcsAdmin
 from src.ui.systems.render_ui import RenderUISystem
 from src.ui.builders import UIBuilder
 from src.drafting.systems.input import InputSystem
+from src.drafting.systems.network import NetworkSystem
+from src.drafting.systems.pygame_events import PygameEventsSystem
+from src.drafting.systems.render import DraftRenderUISystem
 from typing import TypedDict, Literal
 from src.drafting.systems.draft import DraftSystem
 from src.drafting.characters import character_icons
@@ -51,12 +54,14 @@ class NetworkDraftPackage(TypedDict):
     is_team_1: bool
 
 class Drafting(EcsAdmin, AbstractClientState):
-    events = ['update_dt', 'pygame_events']
+    events = ['update_dt', 'pygame_events', 'recv_draft_update', 'recv_force_selection']
     builders = [UIBuilder]
     systems = [
         InputSystem,
-        RenderUISystem,
-        DraftSystem
+        NetworkSystem,
+        DraftRenderUISystem,
+        DraftSystem,
+        PygameEventsSystem
     ]
     singleton_components = [
         ScreenSingletonComponent(
@@ -64,6 +69,7 @@ class Drafting(EcsAdmin, AbstractClientState):
             bg_color=(40, 40, 40)
         ),
         DraftInputSingletonComponent(),
+        SelectedCharacterSingleton()
     ]
     
     def __init__(self, max_entities: int = 1000):
@@ -175,6 +181,12 @@ class Drafting(EcsAdmin, AbstractClientState):
                 'border_thickness': 2,
                 'bg_color': None
             },
+            'rect_focus_attributes': {
+                'radius': 5, 
+                'border_color': (225, 225, 225), 
+                'border_thickness': 5,
+                'bg_color': None
+            }
         }
 
         ui_builder = self.get_builder(UIBuilder)
@@ -206,7 +218,7 @@ class Drafting(EcsAdmin, AbstractClientState):
                 size=box_size,
                 pos=pos,
                 image=icon_image,
-                markers=[char_comp],
+                markers=[char_comp, CharacterButtonMarker()],
                 trigger_event='char_icon_selected',
                 trigger_event_kwargs={'char_id': char_id},
                 **base_box_attributes

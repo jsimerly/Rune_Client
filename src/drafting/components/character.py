@@ -1,4 +1,4 @@
-from ecs_engine import Component
+from ecs_engine import Component, SingletonComponent
 from dataclasses import dataclass
 from typing import Literal
 import pygame
@@ -17,3 +17,7 @@ class DraftCharacterComponent(Component):
     selected: bool = False
     banned: bool = False
     picked: bool = False
+
+@dataclass
+class SelectedCharacterSingleton(SingletonComponent):
+    char_id: int = None

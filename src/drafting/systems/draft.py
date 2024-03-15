@@ -2,7 +2,9 @@ from ecs_engine import System, subscribe_to_event
 from src.drafting.components.draft_state import DraftStateSingletonComponent
 from src.drafting.components.markers import CountdownMarker
 from src.ui.components.visual import TextVisualComponent
-from src.utility.sizing import calculate_component_text_pos
+from src.network import MessageType
+from typing import TypedDict
+
 
 class DraftSystem(System):
     countdown_ended_ctas: dict[str, str] = {
@@ -14,7 +16,20 @@ class DraftSystem(System):
     def update(self, dt:int):
         draft_state = self.get_singleton_component(DraftStateSingletonComponent)
         self._update_countdown(dt, draft_state)
-        
+
+    @subscribe_to_event('recv_draft_update')
+    def update_draft(self, message: MessageType):
+        draft_state = self.get_singleton_component(DraftStateSingletonComponent)
+
+        data = message['data']['update_info']
+
+        draft_state.state = data['state']
+        draft_state.count_down_ms = data['new_time'] * 1000
+
+    @subscribe_to_event('recv_force_selection')
+    def force_selection(self, message: MessageType):
+        print(message)
+            
     def _update_countdown(self, dt:int, draft_state: DraftStateSingletonComponent):
         count_down_entities = self.get_entities_intersect([CountdownMarker])
         draft_state.count_down_ms -= dt
