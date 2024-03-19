@@ -15,7 +15,7 @@ class NetworkSystem(System):
     def route_message(self, message: MessageType):
         message = self.nextwork.decode_json(message)
         if message['type'] == 'draft':
-            if message['data']['type'] == 'draft_udpate':
+            if message['data']['type'] == 'draft_update':
                 self.publish_event('recv_draft_update', message=message)
 
             if message['data']['type'] == 'force_selection':

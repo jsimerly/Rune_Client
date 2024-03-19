@@ -92,7 +92,6 @@ class DraftRenderUISystem(RenderUISystem):
             )
             screen.blit(char_name_surface, char_name_pos)
 
-            
             start_x = selected_role_image_pos[0] + selected_role_image_size[0] + 5
             start_y = selected_role_image_pos[1]
             end_x = screen_size[0] * .825 # (1-.175)

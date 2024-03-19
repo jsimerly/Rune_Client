@@ -43,7 +43,6 @@ class NetworkDraftInfo(TypedDict):
     team_1: NetworkTeamJson
     team_2: NetworkTeamJson
     current_phase: int
-    character_info: dict[int, CharacterDict]
     available: list[int]
     unavailable: list[int]
 
@@ -82,21 +81,21 @@ class Drafting(EcsAdmin, AbstractClientState):
 
     def on_enter(self, load_data: NetworkDraftPackage):
         draft_state_singleton = DraftStateSingletonComponent(
-            id = load_data['draft']['id'],
+            
             active = True,
-            current_phase = load_data['draft']['current_phase'],
             last_action_time_ms = pygame.time.get_ticks(),
             map = load_data['map'],
             is_team_1 = load_data['is_team_1'],
+
+            id = load_data['draft']['id'],
+            state = load_data['draft']['current_phase']['state'],
             team_1 = load_data['draft']['team_1'],
             team_2 = load_data['draft']['team_2'],
-
-            characters = load_data['draft']['character_info'],
             available_picks = load_data['draft']['available'],
             unavailable_picks = load_data['draft']['unavailable'],
         )
         self.add_singleton_component(draft_state_singleton)
-        self._create_character_icons(load_data['draft']['character_info'])
+        self._create_character_icons(load_data['draft']['available'])
         self._create_draft_info_decor(draft_state_singleton)
 
     def update(self):
@@ -164,7 +163,7 @@ class Drafting(EcsAdmin, AbstractClientState):
             )
             t2_pos = (t2_pos[0], t2_pos[1] + box_size[1] + 5)
 
-    def _create_character_icons(self, characters: dict[int, CharacterType]):
+    def _create_character_icons(self, characters: list[int]):
         screen_comp = self.get_singleton_component(ScreenSingletonComponent)
      
         screen_size = screen_comp.screen.get_size()
@@ -195,7 +194,7 @@ class Drafting(EcsAdmin, AbstractClientState):
         icon_spacing = 10
 
         pos = (x_pos, y_pos)
-        for char_id, char_info in characters.items():
+        for char_id in characters:
             char_id = int(char_id)
             icon_image = pygame.transform.scale(character_info[char_id].icon_image, (box_size[0]-2, box_size[1]-2))
         

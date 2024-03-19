@@ -28,7 +28,6 @@ class CharacterType(TypedDict):
 class DraftStateSingletonComponent(SingletonComponent):
     id: str
     active: bool 
-    current_phase: int
 
     last_action_time_ms: int 
     map: str
@@ -37,7 +36,6 @@ class DraftStateSingletonComponent(SingletonComponent):
     team_1: TeamType
     team_2: TeamType
 
-    characters: dict[int, CharacterType] 
     available_picks: list[int]
     unavailable_picks: list[int] 
 
