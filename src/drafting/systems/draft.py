@@ -1,12 +1,15 @@
 from ecs_engine import System, subscribe_to_event
 from src.drafting.components.draft_state import DraftStateSingletonComponent
+from src.drafting.components.character import SelectedCharacterSingleton
 from src.drafting.components.markers import CountdownMarker
 from src.ui.components.visual import TextVisualComponent
-from src.network import MessageType
+from src.network import MessageType, NetworkManager
+from src.user.user import User
 from typing import TypedDict
 
 
 class DraftSystem(System):
+    network = NetworkManager()
     countdown_ended_ctas: dict[str, str] = {
         'pre_draft': 'Drafting Beginning',
         'completed': 'Game Starting...'
@@ -26,9 +29,37 @@ class DraftSystem(System):
         draft_state.state = data['state']
         draft_state.count_down_ms = data['new_time'] * 1000
 
+    @subscribe_to_event('char_icon_selected')
+    def char_icon_selected(self, char_id: int):
+        print(char_id)
+        selected_char = self.get_singleton_component(SelectedCharacterSingleton)
+        selected_char.char_id = char_id
+
+    @subscribe_to_event('lock_in_clicked')
+    def lock_in_clicked(self):
+        draft_state = self.get_singleton_component(DraftStateSingletonComponent)
+        if draft_state.is_client_turn:
+            self._send_selection()
+        else:
+            print('You cannot lock in yet.')
+
     @subscribe_to_event('recv_force_selection')
     def force_selection(self, message: MessageType):
-        print(message)
+        self._send_selection()
+
+    def _send_selection(self):
+        selected_char_comp = self.get_singleton_component(SelectedCharacterSingleton)
+        draft_state = self.get_singleton_component(DraftStateSingletonComponent)
+  
+        if not selected_char_comp.char_id:
+            raise Exception('WE NEED TO CANCEL THE DRAFT IF NOTHING IS SELECTED')
+
+        message = {
+            'type': 'draft_selection',
+            'draft_id': draft_state.id,
+            'char_id': selected_char_comp.char_id
+        }
+        self.network.send_message(user=User().serialized, type='draft', serialized_message=message)
             
     def _update_countdown(self, dt:int, draft_state: DraftStateSingletonComponent):
         count_down_entities = self.get_entities_intersect([CountdownMarker])

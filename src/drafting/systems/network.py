@@ -20,5 +20,4 @@ class NetworkSystem(System):
 
             if message['data']['type'] == 'force_selection':
                 self.publish_event('recv_force_selection', message=message)
-
-        
+    

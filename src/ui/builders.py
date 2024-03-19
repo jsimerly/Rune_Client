@@ -43,7 +43,7 @@ class UIBuilder(Builder):
         )
     
     def build_button(self,
-            size: tuple[int, int], pos: tuple[int, int], trigger_event:str, trigger_event_kwargs: dict = None,
+            size: tuple[int, int], pos: tuple[int, int], trigger_event:str, trigger_event_kwargs: dict = {},
             rect_attributes: dict[str, Any] | None = None, rect_focus_attributes: dict[str, Any] = None,
             text:str = None, text_attributes: dict[str, Any] | None = None, text_focus_attributes: dict[str, Any] = None,
             image: pygame.Surface | None = None, image_alignment: str = 'center', image_margin: int = 0,
@@ -134,7 +134,7 @@ class UIBuilder(Builder):
             )
             
     def _build_rect_button_components(self,
-            size: tuple[int, int], pos: tuple[int, int], trigger_event: str, trigger_event_kwargs: dict | None,
+            size: tuple[int, int], pos: tuple[int, int], trigger_event: str, trigger_event_kwargs: dict,
             rect_attributes: dict[str, Any] | None, rect_focus_attributes: dict[str, Any] | None,
             text:str, text_attributes: dict[str, Any] | None, text_focus_attributes: dict[str, Any],
             image: pygame.Surface | None = None, image_alignment: str = 'center', image_margin: int = 0,

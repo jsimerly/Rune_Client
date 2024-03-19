@@ -27,17 +27,16 @@ class PygameEventsSystem(System):
                 ui_comp.in_focus = True
                 input_comp.current_focus = entity.id
                 unfocus = False
-                self._check_for_icon(entity)
+                
+                if clickable_comp.event_name:
+                    self.publish_event(clickable_comp.event_name, **clickable_comp.event_kwargs)
             else:
                 ui_comp.in_focus = False
+
+            
 
         if unfocus:
             input_comp.current_focus = None
 
-    def _check_for_icon(self, entity: Entity):
-        char_comp = entity.get_component(DraftCharacterComponent)
-        if char_comp:
-            selected_char = self.get_singleton_component(SelectedCharacterSingleton)
-            selected_char.char_id = char_comp.char_id
 
     

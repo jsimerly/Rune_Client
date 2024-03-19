@@ -8,6 +8,8 @@ class DraftBoxMarker(Component):
     team: Literal['team_1', 'team_2']
     state: Literal['idle', 'active', 'complete'] = field(default='idle')
 
-class CharacterButtonMarker(Component): ...
+@dataclass
+class CharacterButtonMarker(Component):
+    char_id: int
 
 class CountdownMarker(Component): ...

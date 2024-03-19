@@ -15,7 +15,7 @@ from src.drafting.systems.pygame_events import PygameEventsSystem
 from src.drafting.systems.render import DraftRenderUISystem
 from typing import TypedDict, Literal
 from src.drafting.systems.draft import DraftSystem
-from src.drafting.characters import character_icons
+from src.drafting.characters import character_info
 import pygame
 
 client_state = ClientState()
@@ -54,7 +54,7 @@ class NetworkDraftPackage(TypedDict):
     is_team_1: bool
 
 class Drafting(EcsAdmin, AbstractClientState):
-    events = ['update_dt', 'pygame_events', 'recv_draft_update', 'recv_force_selection']
+    events = ['update_dt', 'pygame_events', 'recv_draft_update', 'recv_force_selection', 'lock_in_clicked', 'char_icon_selected']
     builders = [UIBuilder]
     systems = [
         InputSystem,
@@ -181,12 +181,6 @@ class Drafting(EcsAdmin, AbstractClientState):
                 'border_thickness': 2,
                 'bg_color': None
             },
-            'rect_focus_attributes': {
-                'radius': 5, 
-                'border_color': (225, 225, 225), 
-                'border_thickness': 5,
-                'bg_color': None
-            }
         }
 
         ui_builder = self.get_builder(UIBuilder)
@@ -203,22 +197,13 @@ class Drafting(EcsAdmin, AbstractClientState):
         pos = (x_pos, y_pos)
         for char_id, char_info in characters.items():
             char_id = int(char_id)
-            icon_image = pygame.transform.scale(character_icons[char_id], (box_size[0]-2, box_size[1]-2))
-            char_comp = DraftCharacterComponent(
-                char_id=char_id,
-                display_name=char_info['display_name'],
-                role=char_info['role'],
-                damage=char_info['damage'],
-                durability=char_info['durability'],
-                utility=char_info['utility'],
-                difficulty=char_info['difficulty'],
-            )
+            icon_image = pygame.transform.scale(character_info[char_id].icon_image, (box_size[0]-2, box_size[1]-2))
         
             ui_builder.build_button(
                 size=box_size,
                 pos=pos,
                 image=icon_image,
-                markers=[char_comp, CharacterButtonMarker()],
+                markers=[CharacterButtonMarker(char_id)],
                 trigger_event='char_icon_selected',
                 trigger_event_kwargs={'char_id': char_id},
                 **base_box_attributes
